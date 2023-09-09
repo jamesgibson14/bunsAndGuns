@@ -52,7 +52,7 @@ export default {
 			gunRoot._.opt.mesh.hear(message.data || message, peer);
 		}, // a message is received
 		close(ws, code, message) {
-			console.log(`WS opened`, code, message, ws)
+			console.log(`WS opened`, ws.data.headers.origin)
 			ws.data.gunRoot.opt.mesh.bye(peer);
 		}, // a socket is closed
 		drain(ws) {
