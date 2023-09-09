@@ -14,6 +14,7 @@ export default {
     const sessionId = 'abcd';
 		const url = new URL(req.url);
 		const cookies = parseCookies(req.headers.get("Cookie"));
+		console.log('req.header: ', req.headers )
     if( server.upgrade(req, {
       headers: {
         "Set-Cookie": `SessionId=${sessionId}`,
@@ -40,7 +41,7 @@ export default {
 	websocket: {
 		open(ws) {
 			const gunRoot = ws.data.gunRoot
-			console.log(`WS opened from`, ws.data.headers.origin)
+			console.log(`WS opened from`, ws.data.headers.origin, ws)
 			console.STAT && ((console.STAT.sites || (console.STAT.sites = {}))[ws.data.headers.origin] = 1);
 			let peer = {wire: ws}
 			gunRoot._.opt.mesh.hi( peer );
@@ -53,7 +54,7 @@ export default {
 		}, // a message is received
 		close(ws, code, message) {
 			console.log(`WS opened`, ws.data.headers.origin)
-			ws.data.gunRoot.opt.mesh.bye(peer);
+			ws.data.gunRoot._.opt.mesh.bye(peer);
 		}, // a socket is closed
 		drain(ws) {
 			console.log(`WS drain`, ws)
