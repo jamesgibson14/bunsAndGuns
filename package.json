@@ -1,0 +1,13 @@
+{
+  "name": "bunsAndGuns",
+  "module": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.js",
+    "debug": "bun run --inspect-brk index.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1454.0",
+    "gun": "^0.2020.1239"
+  }
+}
