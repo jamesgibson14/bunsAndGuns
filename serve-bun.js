@@ -1,3 +1,25 @@
+import Gun from 'gun/gun'
+
+Gun.on('opt', function(root){
+	var opt = root.opt;
+	if(false === opt.ws || opt.once){
+		this.to.next(root);
+		return;
+	}	
+
+	opt.mesh = opt.mesh || Gun.Mesh(root);
+	opt.WebSocket = opt.WebSocket || require('ws');
+	var ws = opt.ws = opt.ws || {};
+	ws.path = ws.path || '/gun';
+	// if we DO need an HTTP server, then choose ws specific one or GUN default one.
+	if(!ws.noServer){
+		ws.server = ws.server || opt.web;
+		if(!ws.server){ this.to.next(root); return } // ugh, bug fix for @jamierez & unstoppable ryan.
+	}
+	// ws.web = ws.web || new opt.WebSocket.Server(ws); // we still need a WS server.
+	
+	this.to.next(root);
+});
 function parseCookies (rc) {
 	var list = {}
 
@@ -40,21 +62,25 @@ export default {
   },
 	websocket: {
 		open(ws) {
-			const gunRoot = ws.data.gunRoot
-			console.log(`WS opened from`, ws.data.headers.origin, ws)
-			console.STAT && ((console.STAT.sites || (console.STAT.sites = {}))[ws.data.headers.origin] = 1);
+			const gunOpt = ws.data.gunRoot._.opt
+			console.log(`WS opened from`, ws.data.headers)
+			const origin = ws.data.headers.get('origin')
+			console.STAT && ((console.STAT.sites || (console.STAT.sites = {}))[ origin ] = 1);
 			let peer = {wire: ws}
-			gunRoot._.opt.mesh.hi( peer );
+			gunOpt.mesh.hi( peer );
+			setTimeout(function heart(){ if(!gunOpt.peers[peer.id]){ return } try{ ws.send("[]") }catch(e){} ;setTimeout(heart, 1000 * 20) }, 1000 * 20); // Some systems, like Heroku, require heartbeats to not time out. // TODO: Make this configurable? // TODO: PERF: Find better approach than try/timeouts?
+
 		}, // a socket is opened
 		async message(ws, message) {
+			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`Received ${message}`);
-			const gunRoot = ws.data.gunRoot
 			let peer = {wire: ws}
-			gunRoot._.opt.mesh.hear(message.data || message, peer);
+			gunOpt.mesh.hear(message.data || message, peer);
 		}, // a message is received
 		close(ws, code, message) {
+			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`WS opened`, ws.data.headers.origin)
-			ws.data.gunRoot._.opt.mesh.bye(peer);
+			gunOpt.mesh.bye(peer);
 		}, // a socket is closed
 		drain(ws) {
 			console.log(`WS drain`, ws)

@@ -12,6 +12,9 @@ Gun.on('opt', function(root){
 require('gun/lib/store.js');
 require('gun/lib/rfs.js');
 require('gun/lib/rs3.js');
+// replacing wire.js with this file
+// require('./wire');
+
 require('gun/sea.js')
 require('gun/axe.js')
 require('gun/lib/stats.js');
