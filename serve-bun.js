@@ -80,6 +80,7 @@ export default {
 		close(ws, code, message) {
 			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`WS opened`, ws.data.headers.origin)
+			let peer = {wire: ws}
 			gunOpt.mesh.bye(peer);
 		}, // a socket is closed
 		drain(ws) {
