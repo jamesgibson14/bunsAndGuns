@@ -52,7 +52,7 @@ export default {
 			return
 		}
     if (url.pathname === "/") return new Response(Bun.file("./lib/test.html"));
-    if (url.pathname === "/stats.json") return Response.json(await Bun.file("./node_modules/gun/stats.radata").json());
+    if (url.pathname === "/stats.json") return new Response( Bun.file("./node_modules/gun/stats.radata") );
     if (url.pathname.includes('/public')){
 			const file = url.pathname.split('/').pop()
 			console.log('load public file', file)
