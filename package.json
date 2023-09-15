@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "bun run index.js",
+    "dev": "bun run --watch index.js",
     "debug": "bun run --inspect-brk index.js"
   },
   "dependencies": {

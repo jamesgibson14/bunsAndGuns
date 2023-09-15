@@ -52,7 +52,7 @@ export default {
 			return
 		}
     if (url.pathname === "/") return new Response(Bun.file("./lib/test.html"));
-    if (url.pathname === "/stats.json") return new Response(Bun.file("./node_modules/gun/stats.radata"));
+    if (url.pathname === "/stats.json") return Response.json(await Bun.file("./node_modules/gun/stats.radata").json());
     if (url.pathname.includes('/public')){
 			const file = url.pathname.split('/').pop()
 			console.log('load public file', file)
@@ -65,7 +65,7 @@ export default {
 			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`WS opened from`, ws.data.headers)
 			const origin = ws.data.headers.get('origin')
-			console.STAT && ((console.STAT.sites || (console.STAT.sites = {}))[ origin ] = 1);
+			console.STAT && ((console.STAT.sites || (console.STAT.sites = { [ origin ]:0 }))[ origin ] += 1);
 			let peer = {wire: ws}
 			gunOpt.mesh.hi( peer );
 			setTimeout(function heart(){ if(!gunOpt.peers[peer.id]){ return } try{ ws.send("[]") }catch(e){} ;setTimeout(heart, 1000 * 20) }, 1000 * 20); // Some systems, like Heroku, require heartbeats to not time out. // TODO: Make this configurable? // TODO: PERF: Find better approach than try/timeouts?
@@ -79,7 +79,9 @@ export default {
 		}, // a message is received
 		close(ws, code, message) {
 			const gunOpt = ws.data.gunRoot._.opt
-			console.log(`WS opened`, ws.data.headers.origin)
+			console.log(`WS closed`, ws.data.headers.origin)
+			const origin = ws.data.headers.get('origin')
+			console.STAT.sites[ origin ] -= 1;
 			let peer = {wire: ws}
 			gunOpt.mesh.bye(peer);
 		}, // a socket is closed
