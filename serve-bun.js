@@ -61,8 +61,8 @@ export default {
 	websocket: {
 		open(ws) {
 			const gunOpt = ws.data.gunRoot._.opt
-			console.log(`WS opened`, ws.data)
 			const origin = ws.data.headers.get('origin')
+			console.log(`WS opened`, ws.data.createdAt, ws.data.sessionId, origin )
 			console.STAT && ((console.STAT.sites || (console.STAT.sites = { [ origin ]:0 }))[ origin ] += 1);
 			let peer = {wire: ws}
 			gunOpt.mesh.hi( peer );
