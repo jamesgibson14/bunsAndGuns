@@ -1,5 +1,6 @@
 import Bun from 'bun'
 import Gun from 'gun/gun'
+import SEA from 'gun/sea'
 globalThis.GUN = Gun
 // This is mostly copied from 'gun/lib/server.js'
 var u;

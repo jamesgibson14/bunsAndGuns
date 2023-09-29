@@ -1,5 +1,4 @@
 import Gun from 'gun/gun'
-
 Gun.on('opt', function(root){
 	var opt = root.opt;
 	if(false === opt.ws || opt.once){
@@ -33,13 +32,12 @@ function parseCookies (rc) {
 export default {
 	port: process.env.PORT || 3000,
 	async fetch(req, server) {
-    const sessionId = 'abcd';
 		const url = new URL(req.url);
 		const cookies = parseCookies(req.headers.get("Cookie"));
 		console.log('req.header: ', req.headers )
     if( server.upgrade(req, {
       headers: {
-        "Set-Cookie": `SessionId=${sessionId}`,
+        "Set-Cookie": `SessionId=${ crypto.randomUUID().slice(0,13) }`,
       },
 			data: {
 				headers: req.headers,
@@ -63,27 +61,27 @@ export default {
 	websocket: {
 		open(ws) {
 			const gunOpt = ws.data.gunRoot._.opt
-			console.log(`WS opened from`, ws.data.headers)
+			console.log(`WS opened`, ws.data)
 			const origin = ws.data.headers.get('origin')
 			console.STAT && ((console.STAT.sites || (console.STAT.sites = { [ origin ]:0 }))[ origin ] += 1);
 			let peer = {wire: ws}
 			gunOpt.mesh.hi( peer );
-			setTimeout(function heart(){ if(!gunOpt.peers[peer.id]){ return } try{ ws.send("[]") }catch(e){} ;setTimeout(heart, 1000 * 20) }, 1000 * 20); // Some systems, like Heroku, require heartbeats to not time out. // TODO: Make this configurable? // TODO: PERF: Find better approach than try/timeouts?
+			ws.data.peer = peer
+			ws.data.heartbeat = setInterval(function heart(){ if(!gunOpt.peers[peer.id]){ return } try{ ws.send("[]") }catch(e){}} , 1000 * 20)			
 
 		}, // a socket is opened
 		async message(ws, message) {
 			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`Received ${message}`);
-			let peer = {wire: ws}
-			gunOpt.mesh.hear(message.data || message, peer);
+			gunOpt.mesh.hear( message, ws.data.peer);
 		}, // a message is received
 		close(ws, code, message) {
 			const gunOpt = ws.data.gunRoot._.opt
 			console.log(`WS closed`, ws.data.headers.origin)
 			const origin = ws.data.headers.get('origin')
 			console.STAT.sites[ origin ] -= 1;
-			let peer = {wire: ws}
-			gunOpt.mesh.bye(peer);
+			gunOpt.mesh.bye( ws.data.peer );
+			clearInterval( ws.data.heartbeat )
 		}, // a socket is closed
 		drain(ws) {
 			console.log(`WS drain`, ws)
