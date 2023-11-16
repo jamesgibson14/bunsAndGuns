@@ -1,4 +1,5 @@
 import Gun from 'gun/gun'
+const perMessageDeflate = process.env.DISABLE_WEBSOCKET_COMPRESSION !== 'true'
 Gun.on('opt', function(root){
 	var opt = root.opt;
 	if(false === opt.ws || opt.once){
@@ -86,6 +87,8 @@ export default {
 		drain(ws) {
 			console.log(`WS drain`, ws)
 		}, // the socket is ready to receive more data
+    // enable compression and decompression
+    perMessageDeflate,
   },
 	error(error) {
     return new Response(`<pre>${error}\n${error.stack}</pre>`, {
